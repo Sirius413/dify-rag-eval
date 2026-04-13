@@ -1,10 +1,15 @@
 import json
 import os
+
 from dataclasses import asdict, dataclass
 from datetime import datetime
+from dotenv import load_dotenv
+from openai import OpenAI
 from typing import Any, Dict, List, Optional
 
-from openai import OpenAI
+load_dotenv()
+
+LLM_NAME = os.getenv('DASHSCOPE_LLM')
 
 DOCUMENTS = [
     "Ragas are melodic frameworks in Indian classical music.",
@@ -289,7 +294,7 @@ class ExampleRAG:
                 component="openai_api",
                 data={
                     "operation": "generate_response",
-                    "model": "qwen3.5:9b",
+                    "model": LLM_NAME,
                     "query": query,
                     "prompt_length": len(prompt),
                     "context_length": len(context),
@@ -300,7 +305,7 @@ class ExampleRAG:
 
         try:
             response = self.llm_client.chat.completions.create(
-                model="qwen3.5:9b",
+                model=LLM_NAME,
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": prompt},
@@ -319,7 +324,7 @@ class ExampleRAG:
                         "usage": (
                             response.usage.model_dump() if response.usage else None
                         ),
-                        "model": "qwen3.5:9b",
+                        "model": LLM_NAME,
                     },
                 )
             )

@@ -1,31 +1,27 @@
-from dotenv import load_dotenv
-
-from openai import OpenAI
-
-from pathlib import Path
-
-from ragas import Dataset, experiment
-from ragas.llms import llm_factory
-from ragas.metrics import DiscreteMetric
-
-
 import gc
 import os
 import sys
+
+from dotenv import load_dotenv
+from openai import OpenAI
+from pathlib import Path
+from ragas import Dataset, experiment
+from ragas.llms import llm_factory
+from ragas.metrics import DiscreteMetric
 
 sys.path.insert(0, str(Path(__file__).parent))
 from rag import default_rag_client
 
 load_dotenv()
 
-OLLAMA_LLM_NAME = os.getenv('OLLAMA_LLM')
-OLLAMA_BASE_URL = os.getenv('OLLAMA_BASE_URL')
+LLM_NAME = os.getenv('DASHSCOPE_LLM')
+BASE_URL = os.getenv('DASHSCOPE_BASE_URL')
 
 openai_client = OpenAI(
-    api_key="ollama",
-    base_url=OLLAMA_BASE_URL
+    api_key=os.getenv('DASHSCOPE_API_KEY'),
+    base_url=BASE_URL
 )
-llm = llm_factory(OLLAMA_LLM_NAME, provider="openai", client=openai_client)
+llm = llm_factory(LLM_NAME, provider="openai", client=openai_client)
 rag_client = default_rag_client(llm_client=openai_client, logdir="evals/logs")
 
 def load_dataset():
