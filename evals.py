@@ -1,21 +1,32 @@
-import os
-import sys
-from pathlib import Path
+from dotenv import load_dotenv
 
 from openai import OpenAI
+
+from pathlib import Path
 
 from ragas import Dataset, experiment
 from ragas.llms import llm_factory
 from ragas.metrics import DiscreteMetric
 
-# Add the current directory to the path so we can import rag module when run as a script
+
+import gc
+import os
+import sys
+
 sys.path.insert(0, str(Path(__file__).parent))
 from rag import default_rag_client
 
-openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-rag_client = default_rag_client(llm_client=openai_client, logdir="evals/logs")
-llm = llm_factory("gpt-4o", client=openai_client)
+load_dotenv()
 
+OLLAMA_LLM_NAME = os.getenv('OLLAMA_LLM')
+OLLAMA_BASE_URL = os.getenv('OLLAMA_BASE_URL')
+
+openai_client = OpenAI(
+    api_key="ollama",
+    base_url=OLLAMA_BASE_URL
+)
+llm = llm_factory(OLLAMA_LLM_NAME, provider="openai", client=openai_client)
+rag_client = default_rag_client(llm_client=openai_client, logdir="evals/logs")
 
 def load_dataset():
     dataset = Dataset(
@@ -47,13 +58,11 @@ def load_dataset():
     dataset.save()
     return dataset
 
-
 my_metric = DiscreteMetric(
     name="correctness",
     prompt="Check if the response contains points mentioned from the grading notes and return 'pass' or 'fail'.\nResponse: {response} Grading Notes: {grading_notes}",
     allowed_values=["pass", "fail"],
 )
-
 
 @experiment()
 async def run_experiment(row):
@@ -72,7 +81,6 @@ async def run_experiment(row):
         "log_file": response.get("logs", " "),
     }
     return experiment_view
-
 
 async def main():
     dataset = load_dataset()
