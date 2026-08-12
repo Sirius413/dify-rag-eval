@@ -310,6 +310,7 @@ class ExampleRAG:
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": prompt},
                 ],
+                extra_body={"enable_thinking":True},
             )
 
             response_text = response.choices[0].message.content.strip()
